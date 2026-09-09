@@ -6,6 +6,7 @@
 
 # Ignore bundler config.
 /.bundle
+/vendor/bundle
 
 # Ignore the default SQLite database.
 /db/*.sqlite3
@@ -29,3 +30,38 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+/config/credentials/*.key
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# Editor / IDE
+*.swp
+*.swo
+*~
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+
+# Test coverage
+/coverage/
+
+# Spring
+/spring/*.pid
+
+# Sass cache
+.sass-cache/
+
+# Redis dump
+dump.rdb
