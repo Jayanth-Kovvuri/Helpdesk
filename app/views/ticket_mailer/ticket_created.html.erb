@@ -1,0 +1,9 @@
+<p>Hello <%= @recipient.email %>,</p>
+
+<% if @actor.admin? %>
+  <p>A support ticket was opened for you by <%= @actor.email %>.</p>
+<% else %>
+  <p><%= @actor.email %> opened a new support ticket.</p>
+<% end %>
+
+<%= render 'ticket_details' %>

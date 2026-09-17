@@ -1,3 +1,8 @@
+# frozen_string_literal: true
+
+require_relative '../helpdesk_cache'
+require_relative '../helpdesk_storage'
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -38,8 +43,7 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = 'X-Sendfile' # for Apache
   # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for NGINX
 
-  # Store uploaded files on the local file system (see config/storage.yml for options)
-  config.active_storage.service = :local
+  config.active_storage.service = HelpdeskStorage.service_name
 
   # Mount Action Cable outside main process or domain
   # config.action_cable.mount_path = nil
@@ -54,14 +58,12 @@ Rails.application.configure do
   config.log_level = :debug
 
   # Prepend all log lines with the following tags.
-  config.log_tags = [ :request_id ]
+  config.log_tags = [:request_id]
 
-  # Use a different cache store in production.
-  # config.cache_store = :mem_cache_store
+  HelpdeskCache.configure_rails!(config)
 
-  # Use a real queuing backend for Active Job (and separate queues per environment)
-  # config.active_job.queue_adapter     = :resque
-  # config.active_job.queue_name_prefix = "Helpdesk_#{Rails.env}"
+  config.active_job.queue_adapter = :sidekiq
+  config.active_job.queue_name_prefix = "helpdesk_#{Rails.env}"
 
   config.action_mailer.perform_caching = false
 
@@ -83,8 +85,8 @@ Rails.application.configure do
   # require 'syslog/logger'
   # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new 'app-name')
 
-  if ENV["RAILS_LOG_TO_STDOUT"].present?
-    logger           = ActiveSupport::Logger.new(STDOUT)
+  if ENV['RAILS_LOG_TO_STDOUT'].present?
+    logger           = ActiveSupport::Logger.new($stdout)
     logger.formatter = config.log_formatter
     config.logger    = ActiveSupport::TaggedLogging.new(logger)
   end

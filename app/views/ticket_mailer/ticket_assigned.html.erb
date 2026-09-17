@@ -1,0 +1,5 @@
+<p>Hello <%= @recipient.email %>,</p>
+
+<p>You were assigned to ticket #<%= @ticket.id %> by <%= @actor.email %>.</p>
+
+<%= render 'ticket_details' %>

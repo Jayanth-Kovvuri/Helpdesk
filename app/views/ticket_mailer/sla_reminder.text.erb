@@ -1,0 +1,8 @@
+Hello <%= @recipient.email %>,
+
+Ticket #<%= @ticket.id %> is still open and has reached its SLA reminder window
+(<%= distance_of_time_in_words(@sla_wait) %> for <%= priority_label(@ticket) %> priority).
+
+<%= render 'ticket_details' %>
+
+Please review and update the ticket status or add a comment.

@@ -1,0 +1,8 @@
+<p>Hello <%= @recipient.email %>,</p>
+
+<p>Ticket #<%= @ticket.id %> is still open and has reached its SLA reminder window
+(<%= distance_of_time_in_words(@sla_wait) %> for <%= priority_label(@ticket) %> priority).</p>
+
+<%= render 'ticket_details' %>
+
+<p>Please review and update the ticket status or add a comment.</p>

@@ -31,3 +31,38 @@
 
 en:
   hello: "Hello world"
+  api:
+    errors:
+      unauthorized: Unauthorized
+      forbidden: Forbidden
+      query_required: Query parameter q is required
+      invalid_attachment: Invalid file type or size
+      invalid_current_password: Current password is incorrect
+      account_disabled: This account has been disabled
+      cannot_disable_self: You cannot disable your own account
+  ticket:
+    statuses:
+      open: Open
+      in_progress: In progress
+      pending: Pending
+      resolved: Resolved
+      closed: Closed
+    priorities:
+      low: Low
+      medium: Medium
+      high: High
+      urgent: Urgent
+  user:
+    roles:
+      customer: Customer
+      admin: Admin
+  mailers:
+    ticket:
+      ticket_created:
+        subject: "[Helpdesk] New ticket #%{id}: %{title}"
+      ticket_assigned:
+        subject: "[Helpdesk] Assigned to ticket #%{id}: %{title}"
+      comment_added:
+        subject: "[Helpdesk] New comment on ticket #%{id}: %{title}"
+      sla_reminder:
+        subject: "[Helpdesk] SLA reminder for ticket #%{id}: %{title}"

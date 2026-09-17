@@ -1,0 +1,9 @@
+Hello <%= @recipient.email %>,
+
+<% if @actor.admin? %>
+A support ticket was opened for you by <%= @actor.email %>.
+<% else %>
+<%= @actor.email %> opened a new support ticket.
+<% end %>
+
+<%= render 'ticket_details' %>

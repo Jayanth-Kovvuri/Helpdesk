@@ -1,0 +1,6 @@
+Ticket #<%= @ticket.id %>: <%= @ticket.title %>
+Status: <%= status_label(@ticket) %> · Priority: <%= priority_label(@ticket) %>
+
+<%= @ticket.description %>
+
+View ticket: <%= ticket_url(@ticket) %>

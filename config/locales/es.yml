@@ -1,0 +1,36 @@
+es:
+  ticket:
+    statuses:
+      open: Abierto
+      in_progress: En progreso
+      pending: Pendiente
+      resolved: Resuelto
+      closed: Cerrado
+    priorities:
+      low: Baja
+      medium: Media
+      high: Alta
+      urgent: Urgente
+  user:
+    roles:
+      customer: Cliente
+      admin: Administrador
+  api:
+    errors:
+      unauthorized: No autorizado
+      forbidden: Prohibido
+      query_required: El parámetro q es obligatorio
+      invalid_attachment: Tipo de archivo o tamaño no válido
+      invalid_current_password: La contraseña actual es incorrecta
+      account_disabled: Esta cuenta ha sido deshabilitada
+      cannot_disable_self: No puede deshabilitar su propia cuenta
+  mailers:
+    ticket:
+      ticket_created:
+        subject: "[Helpdesk] Nuevo ticket #%{id}: %{title}"
+      ticket_assigned:
+        subject: "[Helpdesk] Asignado al ticket #%{id}: %{title}"
+      comment_added:
+        subject: "[Helpdesk] Nuevo comentario en ticket #%{id}: %{title}"
+      sla_reminder:
+        subject: "[Helpdesk] Recordatorio SLA del ticket #%{id}: %{title}"

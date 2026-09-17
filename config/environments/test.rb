@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+require_relative '../helpdesk_cache'
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -18,9 +22,8 @@ Rails.application.configure do
     'Cache-Control' => "public, max-age=#{1.hour.to_i}"
   }
 
-  # Show full error reports and disable caching.
-  config.consider_all_requests_local       = true
-  config.action_controller.perform_caching = false
+  config.consider_all_requests_local = true
+  HelpdeskCache.configure_rails!(config)
 
   # Raise exceptions instead of rendering exception templates.
   config.action_dispatch.show_exceptions = false
@@ -28,10 +31,15 @@ Rails.application.configure do
   # Disable request forgery protection in test environment.
   config.action_controller.allow_forgery_protection = false
 
+  # Avoid AES-GCM cookie issues on Ruby 2.6 + newer OpenSSL in test runs.
+  config.action_dispatch.use_authenticated_cookie_encryption = false
+
   # Store uploaded files on the local file system in a temporary directory
   config.active_storage.service = :test
 
   config.action_mailer.perform_caching = false
+  config.active_job.queue_adapter = :test
+  config.action_mailer.default_url_options = { host: 'www.example.com' }
 
   # Tell Action Mailer not to deliver emails to the real world.
   # The :test delivery method accumulates sent emails in the

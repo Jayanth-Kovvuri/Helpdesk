@@ -1,0 +1,47 @@
+require:
+  - rubocop-rails
+  - rubocop-rspec
+
+AllCops:
+  NewCops: disable
+  SuggestExtensions: false
+  TargetRubyVersion: 2.6
+  TargetRailsVersion: 5.2
+  Exclude:
+    - 'bin/**/*'
+    - 'db/schema.rb'
+    - 'vendor/**/*'
+    - 'node_modules/**/*'
+
+Rails:
+  Enabled: true
+
+Layout/LineLength:
+  Max: 120
+
+Metrics/BlockLength:
+  Exclude:
+    - 'config/routes.rb'
+    - 'spec/**/*'
+
+Metrics/ModuleLength:
+  Exclude:
+    - 'app/controllers/concerns/api/ticket_actions.rb'
+
+Metrics/MethodLength:
+  Exclude:
+    - 'db/migrate/**/*'
+
+Rails/FilePath:
+  Exclude:
+    - 'config/environments/**/*'
+    - 'spec/rails_helper.rb'
+
+Style/Documentation:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Max: 10
+
+RSpec/MultipleExpectations:
+  Max: 3

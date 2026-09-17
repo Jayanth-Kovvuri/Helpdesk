@@ -1,0 +1,7 @@
+# Sidekiq process configuration (see: bundle exec sidekiq -C config/sidekiq.yml)
+:concurrency: 5
+:queues:
+  - [default, 2]
+  - [mailers, 2]
+
+:max_retries: 5

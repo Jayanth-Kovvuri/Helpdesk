@@ -1,3 +1,8 @@
+# frozen_string_literal: true
+
+require_relative '../helpdesk_cache'
+require_relative '../helpdesk_storage'
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -12,28 +17,24 @@ Rails.application.configure do
   # Show full error reports.
   config.consider_all_requests_local = true
 
-  # Enable/disable caching. By default caching is disabled.
-  # Run rails dev:cache to toggle caching.
-  if Rails.root.join('tmp', 'caching-dev.txt').exist?
-    config.action_controller.perform_caching = true
+  # Ruby 2.6 + OpenSSL 3.x cannot encrypt session cookies with AES-GCM (see test.rb).
+  config.action_dispatch.use_authenticated_cookie_encryption = false
 
-    config.cache_store = :memory_store
-    config.public_file_server.headers = {
-      'Cache-Control' => "public, max-age=#{2.days.to_i}"
-    }
-  else
-    config.action_controller.perform_caching = false
+  # Phase 9: Redis cache when REDIS_URL / REDIS_CACHE_URL is set; else rails dev:cache → memory_store.
+  HelpdeskCache.configure_rails!(config)
 
-    config.cache_store = :null_store
-  end
+  # MinIO (S3-compatible) when MINIO_* is set; else disk under storage/ (see config/storage.yml).
+  config.active_storage.service = HelpdeskStorage.service_name
 
-  # Store uploaded files on the local file system (see config/storage.yml for options)
-  config.active_storage.service = :local
-
-  # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.delivery_method = :letter_opener
+  config.action_mailer.perform_deliveries = true
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 
   config.action_mailer.perform_caching = false
+
+  # Phase 7: Sidekiq when Redis is available; otherwise in-process :async (no worker needed).
+  config.active_job.queue_adapter = ENV['REDIS_URL'].present? ? :sidekiq : :async
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

@@ -1,0 +1,4 @@
+<p><strong>Ticket #<%= @ticket.id %></strong>: <%= @ticket.title %></p>
+<p>Status: <%= status_label(@ticket) %> · Priority: <%= priority_label(@ticket) %></p>
+<p><%= @ticket.description %></p>
+<p><a href="<%= ticket_url(@ticket) %>">View ticket</a></p>
