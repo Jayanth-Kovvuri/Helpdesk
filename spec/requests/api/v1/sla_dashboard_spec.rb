@@ -4,15 +4,15 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::SlaDashboard', type: :request do
   let!(:admin) do
-    User.create!(email: 'admin@helpdesk.local', password: 'password123', role: :admin)
+    User.create!(email: 'admin@helpdesk.local', name: 'admin@helpdesk.local', password: 'password123', role: :admin)
   end
   let!(:customer) do
-    User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer)
+    User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer)
   end
 
   describe 'GET /api/v1/sla_dashboard' do
     it 'returns SLA counts for an admin' do
-      Ticket.create!(title: 'Breached', customer: customer, priority: :urgent, created_at: 5.hours.ago)
+      Ticket.create!(title: 'Breached', customer: customer, priority: :urgent, created_at: 3.days.ago)
       login_as(admin)
 
       get '/api/v1/sla_dashboard'

@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe Comment, type: :model do
-  let(:customer) { User.create!(email: 'c@helpdesk.local', password: 'password123', role: :customer) }
+  let(:customer) { User.create!(email: 'c@helpdesk.local', name: 'c@helpdesk.local', password: 'password123', role: :customer) }
   let(:ticket) { Ticket.create!(title: 'Issue', customer: customer) }
 
   it 'is valid with body and associations' do
@@ -21,7 +21,7 @@ RSpec.describe Comment, type: :model do
   end
 
   describe '#manageable_by?' do
-    let(:admin) { User.create!(email: 'a@helpdesk.local', password: 'password123', role: :admin) }
+    let(:admin) { User.create!(email: 'a@helpdesk.local', name: 'a@helpdesk.local', password: 'password123', role: :admin) }
     let(:comment) { described_class.create!(body: 'Note', ticket: ticket, user: customer) }
 
     it 'allows the author' do

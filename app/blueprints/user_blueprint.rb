@@ -3,7 +3,7 @@
 class UserBlueprint < Blueprinter::Base
   identifier :id
 
-  fields :email
+  fields :email, :name
 
   field :role do |user|
     {

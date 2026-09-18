@@ -4,8 +4,8 @@ class TicketSearch
   MIN_QUERY_LENGTH = 2
 
   class << self
-    def call(user:, query:)
-      new(user: user, query: query).call
+    def call(user:, query:, filter: nil, status: nil, priority: nil)
+      new(user: user, query: query, filter: filter, status: status, priority: priority).call
     end
 
     def configured?
@@ -32,9 +32,12 @@ class TicketSearch
     end
   end
 
-  def initialize(user:, query:)
+  def initialize(user:, query:, filter: nil, status: nil, priority: nil)
     @user = user
     @query = query.to_s.strip
+    @filter = filter
+    @status = status
+    @priority = priority
   end
 
   def call
@@ -50,25 +53,71 @@ class TicketSearch
   private
 
   def search_with_elasticsearch
-    Ticket.search(
+    result_ids = Ticket.search(
       @query,
       where: elasticsearch_filters,
-      fields: [{ title: :word_middle }, { description: :word_middle }, { comment_text: :word_middle }],
-      load: true,
+      fields: [
+        { title: :word_middle },
+        { description: :word_middle },
+        { tag_names: :word_middle }
+      ],
+      load: false,
       order: { created_at: :desc },
       misspellings: { below: 2 }
-    )
+    ).map(&:id)
+
+    return tickets_for_ids(result_ids) if result_ids.any?
+
+    search_with_sql
+  rescue StandardError => e
+    Rails.logger.warn("Ticket Elasticsearch search failed: #{e.message}")
+    search_with_sql
+  end
+
+  def tickets_for_ids(result_ids)
+    records = Ticket.where(id: result_ids)
+                    .includes(:customer, :assignee, :comments, :tags, { attachments_attachments: :blob })
+                    .index_by(&:id)
+    result_ids.map { |id| records[id.to_i] }.compact
   end
 
   def search_with_sql
     pattern = "%#{ActiveRecord::Base.sanitize_sql_like(@query)}%"
-    Ticket.visible_to(@user)
-          .where('title ILIKE :q OR description ILIKE :q', q: pattern)
-          .includes(:customer, :assignee, :comments, :tags, { attachments_attachments: :blob })
-          .order(created_at: :desc)
+    scope = Ticket.visible_to(@user)
+                  .where(
+                    'title ILIKE :q OR description ILIKE :q',
+                    q: pattern
+                  )
+
+    case @filter
+    when 'raised'
+      scope = scope.where(customer_id: @user.id)
+    when 'assigned'
+      scope = scope.where(assignee_id: @user.id)
+    end
+
+    scope = scope.where(status: @status) if @status.present?
+    scope = scope.where(priority: @priority) if @priority.present?
+
+    scope.includes(:customer, :assignee, :comments, :tags, { attachments_attachments: :blob })
+         .order(created_at: :desc)
   end
 
   def elasticsearch_filters
-    @user.admin? ? {} : { customer_id: @user.id }
+    filters = {}
+
+    case @filter
+    when 'raised'
+      filters[:customer_id] = @user.id
+    when 'assigned'
+      filters[:assignee_id] = @user.id
+    else
+      filters[:customer_id] = @user.id unless @user.admin?
+    end
+
+    filters[:status] = @status if @status.present?
+    filters[:priority] = @priority if @priority.present?
+
+    filters
   end
 end

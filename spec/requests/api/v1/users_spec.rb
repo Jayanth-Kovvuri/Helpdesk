@@ -4,17 +4,17 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Users', type: :request do
   let!(:admin) do
-    User.create!(email: 'admin@helpdesk.local', password: 'password123', role: :admin)
+    User.create!(email: 'admin@helpdesk.local', name: 'Admin User', password: 'password123', role: :admin)
   end
   let!(:customer) do
-    User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer)
+    User.create!(email: 'customer@helpdesk.local', name: 'Customer User', password: 'password123', role: :customer)
   end
 
   describe 'POST /api/v1/users' do
     it 'allows an admin to create a new account with a role and password' do
       post '/api/v1/session', params: { email: admin.email, password: 'password123' }
 
-      post '/api/v1/users', params: { email: 'agent@helpdesk.local', password: 'password123', role: 'admin' }
+      post '/api/v1/users', params: { email: 'agent@helpdesk.local', name: 'Agent User', password: 'password123', role: 'admin' }
 
       expect(response).to have_http_status(:created)
       expect(User.find_by(email: 'agent@helpdesk.local')).to be_admin

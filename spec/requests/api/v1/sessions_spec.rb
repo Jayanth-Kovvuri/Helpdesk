@@ -6,6 +6,7 @@ RSpec.describe 'Api::V1::Sessions', type: :request do
   let!(:user) do
     User.create!(
       email: 'customer@helpdesk.local',
+      name: 'Customer User',
       password: 'password123',
       role: :customer
     )
@@ -20,6 +21,7 @@ RSpec.describe 'Api::V1::Sessions', type: :request do
         'user' => {
           'id' => user.id,
           'email' => user.email,
+          'name' => user.name,
           'role' => { 'code' => 'customer', 'label' => 'Customer' },
           'disabled' => false
         }

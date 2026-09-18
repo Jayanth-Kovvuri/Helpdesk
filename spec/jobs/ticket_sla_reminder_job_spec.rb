@@ -3,8 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe TicketSlaReminderJob, type: :job do
-  let!(:customer) { User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer) }
-  let!(:admin) { User.create!(email: 'admin@helpdesk.local', password: 'password123', role: :admin) }
+  let!(:customer) { User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer) }
+  let!(:admin) { User.create!(email: 'admin@helpdesk.local', name: 'admin@helpdesk.local', password: 'password123', role: :admin) }
   let!(:ticket) { Ticket.create!(title: 'SLA test', description: 'Open', customer: customer, priority: :high) }
 
   it 'emails admins when the ticket is still open and unassigned' do

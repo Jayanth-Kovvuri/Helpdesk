@@ -4,10 +4,10 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Attachments', type: :request do
   let!(:customer) do
-    User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer)
+    User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer)
   end
   let!(:admin) do
-    User.create!(email: 'admin@helpdesk.local', password: 'password123', role: :admin)
+    User.create!(email: 'admin@helpdesk.local', name: 'admin@helpdesk.local', password: 'password123', role: :admin)
   end
   let!(:ticket) { Ticket.create!(title: 'VPN', customer: customer) }
 

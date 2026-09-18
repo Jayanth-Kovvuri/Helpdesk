@@ -4,13 +4,13 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Tickets', type: :request do
   let!(:customer) do
-    User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer)
+    User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer)
   end
   let!(:admin) do
-    User.create!(email: 'admin@helpdesk.local', password: 'password123', role: :admin)
+    User.create!(email: 'admin@helpdesk.local', name: 'admin@helpdesk.local', password: 'password123', role: :admin)
   end
   let!(:other_customer) do
-    User.create!(email: 'other@helpdesk.local', password: 'password123', role: :customer)
+    User.create!(email: 'other@helpdesk.local', name: 'other@helpdesk.local', password: 'password123', role: :customer)
   end
 
   let!(:customer_ticket) do

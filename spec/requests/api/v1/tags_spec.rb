@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Tags', type: :request do
   let!(:customer) do
-    User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer)
+    User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer)
   end
 
   describe 'GET /api/v1/tags' do

@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe TicketResponseCache do
-  let!(:customer) { User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer) }
+  let!(:customer) { User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer) }
   let!(:ticket) { Ticket.create!(title: 'Cache me', description: 'Body', customer: customer) }
 
   describe '.index_key' do

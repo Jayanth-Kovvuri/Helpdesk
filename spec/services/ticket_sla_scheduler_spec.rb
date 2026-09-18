@@ -3,7 +3,7 @@
 require 'rails_helper'
 
 RSpec.describe TicketSlaScheduler do
-  let(:customer) { User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer) }
+  let(:customer) { User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer) }
   let(:ticket) { Ticket.create!(title: 'Schedule me', description: 'Details', customer: customer, priority: :medium) }
 
   it 'enqueues a delayed SLA reminder job' do

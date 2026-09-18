@@ -6,6 +6,7 @@ RSpec.describe 'Api::V1::Me', type: :request do
   let!(:admin) do
     User.create!(
       email: 'admin@helpdesk.local',
+      name: 'Admin User',
       password: 'password123',
       role: :admin
     )
@@ -21,6 +22,7 @@ RSpec.describe 'Api::V1::Me', type: :request do
         'user' => {
           'id' => admin.id,
           'email' => admin.email,
+          'name' => admin.name,
           'role' => { 'code' => 'admin', 'label' => 'Admin' },
           'disabled' => false
         }
@@ -43,26 +45,9 @@ RSpec.describe 'Api::V1::Me', type: :request do
     end
   end
 
-  describe 'GET /api/v1/me/export' do
-    let!(:customer) do
-      User.create!(email: 'export@helpdesk.local', password: 'password123', role: :customer)
-    end
-    let!(:ticket) { Ticket.create!(title: 'GDPR ticket', customer: customer) }
-
-    it 'returns a GDPR export payload for the current user' do
-      login_as(customer)
-      get '/api/v1/me/export'
-
-      expect(response).to have_http_status(:ok)
-      export = JSON.parse(response.body)['export']
-      expect(export['format']).to eq('helpdesk-gdpr-export-v1')
-      expect(export['tickets'].size).to eq(1)
-    end
-  end
-
   describe 'PATCH /api/v1/me' do
     let!(:customer) do
-      User.create!(email: 'reset@helpdesk.local', password: 'password123', role: :customer)
+      User.create!(email: 'reset@helpdesk.local', name: 'reset@helpdesk.local', password: 'password123', role: :customer)
     end
 
     it 'updates the password when the current password is correct' do
@@ -84,7 +69,7 @@ RSpec.describe 'Api::V1::Me', type: :request do
 
   describe 'DELETE /api/v1/me' do
     let!(:customer) do
-      User.create!(email: 'delete@helpdesk.local', password: 'password123', role: :customer)
+      User.create!(email: 'delete@helpdesk.local', name: 'delete@helpdesk.local', password: 'password123', role: :customer)
     end
 
     it 'deletes the account and clears the session' do

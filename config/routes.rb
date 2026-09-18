@@ -12,10 +12,12 @@ Rails.application.routes.draw do
       get 'admin/tickets', to: 'admin_tickets#index'
 
       resource :session, only: %i[create destroy]
-      resource :me, only: %i[show update destroy], controller: 'me' do
-        get :export
+      resource :me, only: %i[show update destroy], controller: 'me'
+      resources :users, only: %i[index create update] do
+        collection do
+          get :search
+        end
       end
-      resources :users, only: %i[index create update]
       resources :tags, only: %i[index]
       resources :tickets, only: %i[index show create update destroy] do
         collection do

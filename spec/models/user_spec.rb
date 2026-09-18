@@ -6,6 +6,7 @@ RSpec.describe User, type: :model do
   subject(:user) do
     described_class.new(
       email: 'agent@helpdesk.local',
+      name: 'Agent User',
       password: 'password123',
       role: :customer
     )
@@ -19,6 +20,7 @@ RSpec.describe User, type: :model do
     user.save!
     duplicate = described_class.new(
       email: 'AGENT@helpdesk.local',
+      name: 'Duplicate User',
       password: 'password123',
       role: :customer
     )
@@ -54,6 +56,7 @@ RSpec.describe User, type: :model do
     it 'defaults to customer' do
       new_user = described_class.create!(
         email: 'new@helpdesk.local',
+        name: 'New User',
         password: 'password123'
       )
       expect(new_user).to be_customer

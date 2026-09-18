@@ -3,8 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe TicketMailer, type: :mailer do
-  let(:customer) { User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer) }
-  let(:admin) { User.create!(email: 'admin@helpdesk.local', password: 'password123', role: :admin) }
+  let(:customer) { User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer) }
+  let(:admin) { User.create!(email: 'admin@helpdesk.local', name: 'admin@helpdesk.local', password: 'password123', role: :admin) }
   let(:ticket) do
     Ticket.create!(title: 'VPN issue', description: 'Cannot connect', customer: customer, assignee: admin)
   end

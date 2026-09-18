@@ -34,7 +34,7 @@ class TicketMailer < ApplicationMailer
   def sla_reminder(ticket, recipient)
     @ticket = ticket
     @recipient = recipient
-    @sla_wait = TicketSla.reminder_wait(ticket.priority)
+    @sla_days = TicketSla.sla_days(ticket.priority)
 
     mail(
       to: recipient.email,

@@ -3,8 +3,8 @@
 require 'rails_helper'
 
 RSpec.describe Ticket, type: :model do
-  let(:customer) { User.create!(email: 'c@helpdesk.local', password: 'password123', role: :customer) }
-  let(:admin) { User.create!(email: 'a@helpdesk.local', password: 'password123', role: :admin) }
+  let(:customer) { User.create!(email: 'c@helpdesk.local', name: 'c@helpdesk.local', password: 'password123', role: :customer) }
+  let(:admin) { User.create!(email: 'a@helpdesk.local', name: 'a@helpdesk.local', password: 'password123', role: :admin) }
 
   it 'is valid with required attributes' do
     ticket = described_class.new(
@@ -16,7 +16,7 @@ RSpec.describe Ticket, type: :model do
   end
 
   it 'requires assignee to be an admin' do
-    other_customer = User.create!(email: 'c2@helpdesk.local', password: 'password123', role: :customer)
+    other_customer = User.create!(email: 'c2@helpdesk.local', name: 'c2@helpdesk.local', password: 'password123', role: :customer)
     ticket = described_class.new(title: 'Test', customer: customer, assignee: other_customer)
     expect(ticket).not_to be_valid
   end
@@ -33,7 +33,7 @@ RSpec.describe Ticket, type: :model do
   describe '.visible_to' do
     let!(:customer_ticket) { described_class.create!(title: 'Mine', customer: customer) }
     let!(:other_ticket) do
-      other = User.create!(email: 'other@helpdesk.local', password: 'password123', role: :customer)
+      other = User.create!(email: 'other@helpdesk.local', name: 'other@helpdesk.local', password: 'password123', role: :customer)
       described_class.create!(title: 'Theirs', customer: other)
     end
 

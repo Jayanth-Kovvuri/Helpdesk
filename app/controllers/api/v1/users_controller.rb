@@ -10,6 +10,20 @@ module Api
         render json: { users: UserBlueprint.render_as_hash(User.order(:email)) }
       end
 
+      def search
+        query = params[:q]
+        if query.blank?
+          return render json: { error: I18n.t('api.errors.query_required') }, status: :bad_request
+        end
+
+        users = UserSearch.call(
+          query: query,
+          role: params[:role],
+          exclude_disabled: ActiveModel::Type::Boolean.new.cast(params[:exclude_disabled])
+        )
+        render json: { users: UserBlueprint.render_as_hash(users) }
+      end
+
       def create
         user = User.new(user_params)
 
@@ -50,7 +64,7 @@ module Api
       end
 
       def user_params
-        params.permit(:email, :password, :role)
+        params.permit(:email, :name, :password, :role)
       end
     end
   end

@@ -6,7 +6,7 @@ class TicketSlaDashboard
 
   class << self
     def summary
-      Rails.cache.fetch('sla_dashboard/v1', expires_in: CACHE_TTL) { new.build }
+      Rails.cache.fetch('sla_dashboard/v2', expires_in: CACHE_TTL) { new.build }
     end
   end
 
@@ -20,7 +20,8 @@ class TicketSlaDashboard
         ok: grouped.fetch(:ok, []).size
       },
       breached_tickets: ticket_summaries(grouped.fetch(:breached, [])),
-      at_risk_tickets: ticket_summaries(grouped.fetch(:at_risk, []))
+      at_risk_tickets: ticket_summaries(grouped.fetch(:at_risk, [])),
+      ok_tickets: ticket_summaries(grouped.fetch(:ok, []))
     }
   end
 

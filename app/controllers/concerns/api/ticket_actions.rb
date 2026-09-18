@@ -17,7 +17,13 @@ module Api
       query = params[:q].to_s.strip
       json =
         if query.length >= TicketSearch::MIN_QUERY_LENGTH
-          TicketResponseCache.fetch_search(current_user, query) do
+          TicketResponseCache.fetch_search(
+            current_user,
+            query,
+            filter: params[:filter],
+            status: params[:status],
+            priority: params[:priority]
+          ) do
             ticket_blueprint.render(tickets_for_query(query), root: :tickets)
           end
         else
@@ -34,7 +40,13 @@ module Api
         return render json: { error: I18n.t('api.errors.query_required') }, status: :bad_request
       end
 
-      json = TicketResponseCache.fetch_search(current_user, query) do
+      json = TicketResponseCache.fetch_search(
+        current_user,
+        query,
+        filter: params[:filter],
+        status: params[:status],
+        priority: params[:priority]
+      ) do
         ticket_blueprint.render(tickets_for_query(query), root: :tickets)
       end
       render json: json
@@ -49,8 +61,10 @@ module Api
 
     def create
       ticket = build_ticket_for_create
+      attachments = ticket_create_params[:attachments]
 
       if ticket.save
+        attach_files_to_ticket(ticket, attachments)
         notify_ticket_created(ticket)
         render json: ticket_blueprint.render(ticket.reload, root: :ticket), status: :created
       else
@@ -75,13 +89,30 @@ module Api
     private
 
     def ticket_scope
-      Ticket.visible_to(current_user)
-            .includes(*ticket_includes)
-            .order(created_at: :desc)
+      apply_ticket_list_filter(Ticket.visible_to(current_user))
+        .includes(*ticket_includes)
+        .order(created_at: :desc)
+    end
+
+    def apply_ticket_list_filter(scope)
+      case params[:filter]
+      when 'raised'
+        scope.where(customer_id: current_user.id)
+      when 'assigned'
+        scope.where(assignee_id: current_user.id)
+      else
+        scope
+      end
     end
 
     def tickets_for_query(query)
-      TicketSearch.call(user: current_user, query: query)
+      TicketSearch.call(
+        user: current_user,
+        query: query,
+        filter: params[:filter],
+        status: params[:status],
+        priority: params[:priority]
+      )
     end
 
     def ticket_includes
@@ -93,25 +124,36 @@ module Api
     end
 
     def build_ticket_for_create
-      return Ticket.new(ticket_create_params) if current_user.admin?
-
       Ticket.new(customer_ticket_attributes)
     end
 
     def customer_ticket_attributes
       permitted = ticket_create_params
+      assignee = find_assignee(permitted[:assignee_id])
+
       {
         title: permitted[:title],
         description: permitted[:description],
         priority: permitted[:priority] || :medium,
         customer: current_user,
-        status: :open
+        status: :open,
+        assignee: assignee
       }
+    end
+
+    def find_assignee(assignee_id)
+      # If assignee is specified by admin, use it; otherwise auto-assign to first admin
+      if assignee_id.present? && current_user.admin?
+        User.find(assignee_id)
+      else
+        User.where(role: :admin).first
+      end
     end
 
     def ticket_create_params
       permitted = %i[title description status priority assignee_id]
       permitted << :customer_id if current_user.admin?
+      permitted << { attachments: [] }
 
       params.require(:ticket).permit(permitted)
     end
@@ -143,6 +185,21 @@ module Api
       return if @ticket.assignee_id.blank?
 
       TicketNotifications.ticket_assigned(@ticket, actor: current_user)
+    end
+
+    def attach_files_to_ticket(ticket, files)
+      return if files.blank?
+
+      Array(files).each do |file|
+        next unless Ticket.allowed_upload?(file)
+
+        ticket.attachments.attach(
+          io: file,
+          filename: file.original_filename,
+          content_type: file.content_type,
+          metadata: { user_id: current_user.id }
+        )
+      end
     end
   end
 end

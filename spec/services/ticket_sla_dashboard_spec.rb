@@ -3,13 +3,13 @@
 require 'rails_helper'
 
 RSpec.describe TicketSlaDashboard do
-  let(:customer) { User.create!(email: 'c@helpdesk.local', password: 'password123', role: :customer) }
+  let(:customer) { User.create!(email: 'c@helpdesk.local', name: 'c@helpdesk.local', password: 'password123', role: :customer) }
 
   describe '.summary' do
     it 'counts active tickets by SLA state' do
       Ticket.create!(title: 'Fresh', customer: customer, priority: :low, created_at: Time.current)
-      Ticket.create!(title: 'At risk', customer: customer, priority: :high, created_at: 7.hours.ago)
-      Ticket.create!(title: 'Breached', customer: customer, priority: :urgent, created_at: 5.hours.ago)
+      Ticket.create!(title: 'At risk', customer: customer, priority: :high, created_at: 2.5.days.ago)
+      Ticket.create!(title: 'Breached', customer: customer, priority: :urgent, created_at: 2.5.days.ago)
 
       summary = described_class.summary
 
@@ -18,7 +18,7 @@ RSpec.describe TicketSlaDashboard do
 
     it 'ignores resolved and closed tickets' do
       Ticket.create!(
-        title: 'Old but resolved', customer: customer, priority: :urgent, created_at: 5.hours.ago,
+        title: 'Old but resolved', customer: customer, priority: :urgent, created_at: 2.5.days.ago,
         status: :resolved
       )
 
@@ -28,8 +28,8 @@ RSpec.describe TicketSlaDashboard do
     end
 
     it 'lists breached tickets ordered by how overdue they are' do
-      very_late = Ticket.create!(title: 'Very late', customer: customer, priority: :urgent, created_at: 10.hours.ago)
-      just_late = Ticket.create!(title: 'Just late', customer: customer, priority: :urgent, created_at: 4.1.hours.ago)
+      very_late = Ticket.create!(title: 'Very late', customer: customer, priority: :urgent, created_at: 4.days.ago)
+      just_late = Ticket.create!(title: 'Just late', customer: customer, priority: :urgent, created_at: 2.1.days.ago)
 
       summary = described_class.summary
 
@@ -40,7 +40,7 @@ RSpec.describe TicketSlaDashboard do
       Ticket.create!(title: 'Fresh', customer: customer, priority: :low, created_at: Time.current)
       first = described_class.summary
 
-      Ticket.create!(title: 'Breached', customer: customer, priority: :urgent, created_at: 5.hours.ago)
+      Ticket.create!(title: 'Breached', customer: customer, priority: :urgent, created_at: 2.5.days.ago)
       second = described_class.summary
 
       expect(second).to eq(first)

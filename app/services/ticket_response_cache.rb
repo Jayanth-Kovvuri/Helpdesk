@@ -14,8 +14,14 @@ class TicketResponseCache
       Rails.cache.fetch(show_key(ticket), expires_in: SHOW_TTL, &block)
     end
 
-    def fetch_search(user, query, &block)
-      Rails.cache.fetch(search_key(user, query), expires_in: SEARCH_TTL, &block)
+    def fetch_search(user, query, filter: nil, status: nil, priority: nil, &block)
+      return yield if Rails.env.development?
+
+      Rails.cache.fetch(
+        search_key(user, query, filter: filter, status: status, priority: priority),
+        expires_in: SEARCH_TTL,
+        &block
+      )
     end
 
     def index_key(user)
@@ -27,10 +33,19 @@ class TicketResponseCache
       ['tickets/v1/show', ticket.cache_key_with_version]
     end
 
-    def search_key(user, query)
+    def search_key(user, query, filter: nil, status: nil, priority: nil)
       scope = Ticket.visible_to(user)
       normalized = query.to_s.strip.downcase
-      ['tickets/v1/search', user.id, user.role, scope_version(scope), normalized]
+      [
+        'tickets/v3/search',
+        user.id,
+        user.role,
+        scope_version(scope),
+        normalized,
+        filter.presence,
+        status.presence,
+        priority.presence
+      ]
     end
 
     private

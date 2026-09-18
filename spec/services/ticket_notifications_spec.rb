@@ -3,9 +3,9 @@
 require 'rails_helper'
 
 RSpec.describe TicketNotifications do
-  let!(:customer) { User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer) }
-  let!(:admin) { User.create!(email: 'admin@helpdesk.local', password: 'password123', role: :admin) }
-  let!(:other_admin) { User.create!(email: 'admin2@helpdesk.local', password: 'password123', role: :admin) }
+  let!(:customer) { User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer) }
+  let!(:admin) { User.create!(email: 'admin@helpdesk.local', name: 'admin@helpdesk.local', password: 'password123', role: :admin) }
+  let!(:other_admin) { User.create!(email: 'admin2@helpdesk.local', name: 'admin2@helpdesk.local', password: 'password123', role: :admin) }
 
   describe '.ticket_created' do
     it 'notifies all admins when a customer creates a ticket' do

@@ -49,6 +49,9 @@ class Ticket < ApplicationRecord
       comment_text: comments.pluck(:body).join("\n"),
       tag_names: tags.pluck(:name).join(' '),
       customer_id: customer_id,
+      assignee_id: assignee_id,
+      status: status,
+      priority: priority,
       created_at: created_at
     }
   end

@@ -8,4 +8,10 @@ class CommentBlueprint < Blueprinter::Base
   field :author do |comment|
     UserBlueprint.render_as_hash(comment.user)
   end
+
+  field :attachments do |comment, options|
+    grouped = options[:attachments_by_comment_id] || {}
+    records = grouped[comment.id] || []
+    AttachmentBlueprint.render_as_hash(records, options)
+  end
 end

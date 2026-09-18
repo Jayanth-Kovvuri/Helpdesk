@@ -17,10 +17,6 @@ module Api
         end
       end
 
-      def export
-        render json: { export: UserPrivacy.export(current_user) }
-      end
-
       def destroy
         UserPrivacy.destroy_account!(current_user)
         reset_session

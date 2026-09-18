@@ -1,7 +1,7 @@
 <p>Hello <%= @recipient.email %>,</p>
 
 <p>Ticket #<%= @ticket.id %> is still open and has reached its SLA reminder window
-(<%= distance_of_time_in_words(@sla_wait) %> for <%= priority_label(@ticket) %> priority).</p>
+(<%= distance_of_time_in_words(@sla_days.days) %> for <%= priority_label(@ticket) %> priority).</p>
 
 <%= render 'ticket_details' %>
 

@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Ticket response caching', type: :request do
   let!(:customer) do
-    User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer)
+    User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer)
   end
   let!(:ticket) do
     Ticket.create!(title: 'Cached title', description: 'Details', customer: customer)
@@ -35,6 +35,18 @@ RSpec.describe 'Api::V1::Ticket response caching', type: :request do
       get '/api/v1/tickets'
 
       expect(json['tickets'].first['title']).to eq('Updated title')
+    end
+  end
+
+  describe 'GET /api/v1/tickets search cache keys' do
+    it 'uses separate cache entries per list filter' do
+      login_as(customer)
+      get '/api/v1/tickets', params: { q: 'cached', filter: 'raised' }
+      raised_key = TicketResponseCache.search_key(customer, 'cached', filter: 'raised')
+      assigned_key = TicketResponseCache.search_key(customer, 'cached', filter: 'assigned')
+
+      expect(raised_key).not_to eq(assigned_key)
+      expect(Rails.cache.exist?(raised_key)).to be(true)
     end
   end
 

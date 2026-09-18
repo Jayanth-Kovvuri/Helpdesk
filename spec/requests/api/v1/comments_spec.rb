@@ -4,15 +4,22 @@ require 'rails_helper'
 
 RSpec.describe 'Api::V1::Comments', type: :request do
   let!(:customer) do
-    User.create!(email: 'customer@helpdesk.local', password: 'password123', role: :customer)
+    User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer)
   end
   let!(:admin) do
-    User.create!(email: 'admin@helpdesk.local', password: 'password123', role: :admin)
+    User.create!(email: 'admin@helpdesk.local', name: 'admin@helpdesk.local', password: 'password123', role: :admin)
   end
   let!(:ticket) { Ticket.create!(title: 'VPN', customer: customer) }
 
   def json
     JSON.parse(response.body)
+  end
+
+  def sample_file
+    Rack::Test::UploadedFile.new(
+      Rails.root.join('spec/fixtures/files/sample.txt'),
+      'text/plain'
+    )
   end
 
   describe 'GET /api/v1/tickets/:ticket_id/comments' do
@@ -30,7 +37,7 @@ RSpec.describe 'Api::V1::Comments', type: :request do
     end
 
     it 'forbids listing comments on another customers ticket' do
-      other = User.create!(email: 'other@helpdesk.local', password: 'password123', role: :customer)
+      other = User.create!(email: 'other@helpdesk.local', name: 'other@helpdesk.local', password: 'password123', role: :customer)
       other_ticket = Ticket.create!(title: 'Email', customer: other)
       login_as(customer)
       get "/api/v1/tickets/#{other_ticket.id}/comments"
@@ -65,6 +72,18 @@ RSpec.describe 'Api::V1::Comments', type: :request do
       expect(ActionMailer::Base.deliveries.map(&:to)).to eq([[admin.email]])
     end
 
+    it 'stores an optional file on the ticket when provided with the comment' do
+      login_as(customer)
+      post "/api/v1/tickets/#{ticket.id}/comments", params: {
+        comment: { body: 'See attached', file: sample_file }
+      }
+
+      expect(response).to have_http_status(:created)
+      expect(json['comment']['attachments'].size).to eq(1)
+      expect(json['comment']['attachments'].first['filename']).to eq('sample.txt')
+      expect(ticket.reload.attachments.count).to eq(1)
+    end
+
     it 'sanitizes HTML in the request body' do
       login_as(admin)
       post "/api/v1/tickets/#{ticket.id}/comments", params: {
@@ -88,7 +107,7 @@ RSpec.describe 'Api::V1::Comments', type: :request do
     end
 
     it 'forbids another customer from deleting' do
-      other = User.create!(email: 'other2@helpdesk.local', password: 'password123', role: :customer)
+      other = User.create!(email: 'other2@helpdesk.local', name: 'other2@helpdesk.local', password: 'password123', role: :customer)
       login_as(other)
       delete "/api/v1/tickets/#{ticket.id}/comments/#{comment.id}"
 
