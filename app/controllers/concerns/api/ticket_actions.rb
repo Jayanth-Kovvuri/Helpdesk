@@ -73,7 +73,12 @@ module Api
     end
 
     def update
-      if @ticket.update(ticket_update_params)
+      attrs = sanitized_ticket_update_params
+      if attrs.empty?
+        return render json: { error: I18n.t('api.errors.forbidden') }, status: :forbidden
+      end
+
+      if @ticket.update(attrs)
         notify_ticket_assigned_if_changed
         render json: ticket_blueprint.render(@ticket.reload, root: :ticket)
       else
@@ -124,30 +129,42 @@ module Api
     end
 
     def build_ticket_for_create
-      Ticket.new(customer_ticket_attributes)
+      permitted = ticket_create_params
+      Ticket.new(ticket_attributes_for_create(permitted))
     end
 
-    def customer_ticket_attributes
-      permitted = ticket_create_params
-      assignee = find_assignee(permitted[:assignee_id])
-
-      {
+    def ticket_attributes_for_create(permitted)
+      base = {
         title: permitted[:title],
         description: permitted[:description],
-        priority: permitted[:priority] || :medium,
-        customer: current_user,
-        status: :open,
-        assignee: assignee
+        priority: permitted[:priority] || :medium
       }
+
+      if current_user.admin?
+        base.merge(
+          customer: customer_for_admin_create(permitted[:customer_id]),
+          status: permitted[:status].presence || :open,
+          assignee: find_assignee(permitted[:assignee_id])
+        )
+      else
+        base.merge(
+          customer: current_user,
+          status: :open,
+          assignee: nil
+        )
+      end
+    end
+
+    def customer_for_admin_create(customer_id)
+      return current_user if customer_id.blank?
+
+      User.find(customer_id)
     end
 
     def find_assignee(assignee_id)
-      # If assignee is specified by admin, use it; otherwise auto-assign to first admin
-      if assignee_id.present? && current_user.admin?
-        User.find(assignee_id)
-      else
-        User.where(role: :admin).first
-      end
+      return unless current_user.admin? && assignee_id.present?
+
+      User.find(assignee_id)
     end
 
     def ticket_create_params
@@ -164,8 +181,30 @@ module Api
           :title, :description, :status, :priority, :assignee_id, :customer_id
         )
       else
-        params.require(:ticket).permit(:title, :description)
+        params.require(:ticket).permit(:title, :description, :status)
       end
+    end
+
+    def sanitized_ticket_update_params
+      raw = ticket_update_params.to_h.symbolize_keys
+      return raw if current_user.admin?
+
+      attrs = raw.slice(:title, :description)
+      status = raw[:status].to_s
+      if status.present?
+        return {} unless customer_may_withdraw?(@ticket, status)
+
+        attrs[:status] = :closed
+      end
+      attrs
+    end
+
+    def customer_may_withdraw?(ticket, requested_status)
+      return false unless requested_status == 'closed'
+      return false unless ticket.customer_id == current_user.id
+      return false if ticket.closed?
+
+      true
     end
 
     def ticket_blueprint

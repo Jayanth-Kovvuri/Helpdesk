@@ -2,6 +2,7 @@
 
 require_relative '../helpdesk_cache'
 require_relative '../helpdesk_storage'
+require Rails.root.join('lib/sendgrid_smtp')
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -26,9 +27,13 @@ Rails.application.configure do
   # MinIO (S3-compatible) when MINIO_* is set; else disk under storage/ (see config/storage.yml).
   config.active_storage.service = HelpdeskStorage.service_name
 
-  config.action_mailer.raise_delivery_errors = true
-  config.action_mailer.delivery_method = :letter_opener
   config.action_mailer.perform_deliveries = true
+  if SendgridSmtp.enabled?
+    SendgridSmtp.apply!(config)
+  else
+    config.action_mailer.raise_delivery_errors = true
+    config.action_mailer.delivery_method = :letter_opener
+  end
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 
   config.action_mailer.perform_caching = false

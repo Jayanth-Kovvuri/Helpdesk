@@ -17,6 +17,14 @@ class TicketNotifications
     new.sla_reminder(ticket)
   end
 
+  def self.sla_breach(ticket)
+    new.sla_breach(ticket)
+  end
+
+  def self.notify_sla(ticket, deliver_now: false)
+    new.notify_sla(ticket, deliver_now: deliver_now)
+  end
+
   def ticket_created(ticket, actor:)
     if actor.admin?
       deliver(:ticket_created, ticket, ticket.customer, actor)
@@ -46,13 +54,36 @@ class TicketNotifications
   end
 
   def sla_reminder(ticket)
-    recipients = sla_reminder_recipients(ticket)
-    recipients.each do |recipient|
-      TicketMailer.sla_reminder(ticket, recipient).deliver_later
-    end
+    deliver_sla(:sla_reminder, ticket)
+  end
+
+  def sla_breach(ticket)
+    deliver_sla(:sla_breach, ticket)
+  end
+
+  def notify_sla(ticket, deliver_now: false)
+    mail_action = TicketSla.state(ticket) == :breached ? :sla_breach : :sla_reminder
+    deliver_sla(mail_action, ticket, deliver_now: deliver_now)
   end
 
   private
+
+  def deliver_sla(mail_action, ticket, deliver_now: false)
+    sla_recipients(ticket).each do |recipient|
+      mail = TicketMailer.public_send(mail_action, ticket, recipient)
+      deliver_now ? mail.deliver_now : mail.deliver_later
+    end
+  end
+
+  def sla_recipients(ticket)
+    return [sla_context_user(ticket)] if ENV['NOTIFICATION_EMAIL'].present?
+
+    sla_reminder_recipients(ticket)
+  end
+
+  def sla_context_user(ticket)
+    ticket.assignee || User.admin.order(:id).first || ticket.customer
+  end
 
   def sla_reminder_recipients(ticket)
     return [ticket.assignee] if ticket.assignee.present?

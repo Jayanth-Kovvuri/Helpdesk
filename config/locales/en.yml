@@ -40,6 +40,7 @@ en:
       invalid_current_password: Current password is incorrect
       account_disabled: This account has been disabled
       cannot_disable_self: You cannot disable your own account
+      notification_email_missing: NOTIFICATION_EMAIL is not set
   ticket:
     statuses:
       open: Open
@@ -66,3 +67,5 @@ en:
         subject: "[Helpdesk] New comment on ticket #%{id}: %{title}"
       sla_reminder:
         subject: "[Helpdesk] SLA reminder for ticket #%{id}: %{title}"
+      sla_breach:
+        subject: "[Helpdesk] SLA breached for ticket #%{id}: %{title}"

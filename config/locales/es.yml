@@ -24,6 +24,7 @@ es:
       invalid_current_password: La contraseña actual es incorrecta
       account_disabled: Esta cuenta ha sido deshabilitada
       cannot_disable_self: No puede deshabilitar su propia cuenta
+      notification_email_missing: NOTIFICATION_EMAIL no está configurado
   mailers:
     ticket:
       ticket_created:
@@ -34,3 +35,5 @@ es:
         subject: "[Helpdesk] Nuevo comentario en ticket #%{id}: %{title}"
       sla_reminder:
         subject: "[Helpdesk] Recordatorio SLA del ticket #%{id}: %{title}"
+      sla_breach:
+        subject: "[Helpdesk] SLA incumplido en ticket #%{id}: %{title}"

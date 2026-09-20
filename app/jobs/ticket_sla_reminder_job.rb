@@ -8,6 +8,10 @@ class TicketSlaReminderJob < ApplicationJob
     return unless ticket
     return if ticket.resolved? || ticket.closed?
 
-    TicketNotifications.sla_reminder(ticket)
+    if TicketSla.state(ticket) == :breached
+      TicketNotifications.sla_breach(ticket)
+    else
+      TicketNotifications.sla_reminder(ticket)
+    end
   end
 end

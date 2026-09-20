@@ -1,0 +1,9 @@
+Hello,
+
+Ticket #<%= @ticket.id %> has breached its SLA (<%= @sla_days %> days for <%= priority_label(@ticket) %> priority).
+
+<%= render 'ticket_details' %>
+
+Please review and update the ticket status or reassign it.
+
+Ticket link: <%= ticket_url(@ticket) %>

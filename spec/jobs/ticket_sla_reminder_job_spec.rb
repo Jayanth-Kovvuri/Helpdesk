@@ -35,4 +35,28 @@ RSpec.describe TicketSlaReminderJob, type: :job do
 
     expect(ActionMailer::Base.deliveries.map(&:to)).to eq([[admin.email]])
   end
+
+  it 'sends a breach email when the ticket is past SLA' do
+    ticket.update!(priority: :urgent, created_at: 3.days.ago)
+
+    perform_enqueued_jobs do
+      described_class.perform_now(ticket.id)
+    end
+
+    expect(ActionMailer::Base.deliveries.last.subject).to include('SLA breached')
+    expect(ActionMailer::Base.deliveries.last.body.encoded).to include('breached its SLA')
+  end
+
+  it 'sends to NOTIFICATION_EMAIL when configured' do
+    ENV['NOTIFICATION_EMAIL'] = 'notify@example.com'
+    ticket.update!(assignee: admin, status: :in_progress)
+
+    perform_enqueued_jobs do
+      described_class.perform_now(ticket.id)
+    end
+
+    expect(ActionMailer::Base.deliveries.map(&:to)).to eq([['notify@example.com']])
+  ensure
+    ENV.delete('NOTIFICATION_EMAIL')
+  end
 end

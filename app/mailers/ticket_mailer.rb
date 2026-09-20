@@ -17,9 +17,11 @@ class TicketMailer < ApplicationMailer
     assign_mail_vars(ticket, recipient, actor)
 
     mail(
-      to: recipient.email,
+      to: MailRecipient.delivery_address(:ticket_assigned, recipient.email),
       subject: I18n.t('mailers.ticket.ticket_assigned.subject', id: ticket.id, title: ticket.title)
-    )
+    ) do |format|
+      format.text
+    end
   end
 
   def comment_added(comment, recipient, actor)
@@ -37,9 +39,24 @@ class TicketMailer < ApplicationMailer
     @sla_days = TicketSla.sla_days(ticket.priority)
 
     mail(
-      to: recipient.email,
+      to: MailRecipient.delivery_address(:sla_reminder, recipient.email),
       subject: I18n.t('mailers.ticket.sla_reminder.subject', id: ticket.id, title: ticket.title)
-    )
+    ) do |format|
+      format.text
+    end
+  end
+
+  def sla_breach(ticket, recipient)
+    @ticket = ticket
+    @recipient = recipient
+    @sla_days = TicketSla.sla_days(ticket.priority)
+
+    mail(
+      to: MailRecipient.delivery_address(:sla_breach, recipient.email),
+      subject: I18n.t('mailers.ticket.sla_breach.subject', id: ticket.id, title: ticket.title)
+    ) do |format|
+      format.text
+    end
   end
 
   private

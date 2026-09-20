@@ -139,10 +139,30 @@ RSpec.describe 'Api::V1::Tickets', type: :request do
       expect(json['ticket']['assignee']['id']).to eq(admin.id)
     end
 
-    it 'forbids customer from changing status' do
+    it 'lets customer withdraw their ticket by setting status to closed' do
       login_as(customer)
       patch "/api/v1/tickets/#{customer_ticket.id}", params: {
-        ticket: { title: 'Updated title', status: 'closed' }
+        ticket: { status: 'closed' }
+      }
+
+      expect(response).to have_http_status(:ok)
+      expect(json['ticket']['status']['code']).to eq('closed')
+    end
+
+    it 'forbids customer from setting status to values other than closed' do
+      login_as(customer)
+      patch "/api/v1/tickets/#{customer_ticket.id}", params: {
+        ticket: { status: 'in_progress' }
+      }
+
+      expect(response).to have_http_status(:forbidden)
+      expect(customer_ticket.reload.status).to eq('open')
+    end
+
+    it 'lets customer update title without changing status' do
+      login_as(customer)
+      patch "/api/v1/tickets/#{customer_ticket.id}", params: {
+        ticket: { title: 'Updated title', status: 'in_progress' }
       }
 
       expect(response).to have_http_status(:ok)

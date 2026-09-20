@@ -2,6 +2,7 @@
 
 require_relative '../helpdesk_cache'
 require_relative '../helpdesk_storage'
+require Rails.root.join('lib/sendgrid_smtp')
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -66,10 +67,14 @@ Rails.application.configure do
   config.active_job.queue_name_prefix = "helpdesk_#{Rails.env}"
 
   config.action_mailer.perform_caching = false
+  config.action_mailer.perform_deliveries = true
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
+  if SendgridSmtp.enabled?
+    SendgridSmtp.apply!(config)
+  else
+    # Ignore bad email addresses and do not raise email delivery errors.
+    config.action_mailer.raise_delivery_errors = false
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

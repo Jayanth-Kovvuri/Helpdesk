@@ -52,6 +52,19 @@ RSpec.describe TicketNotifications do
 
       expect(ActionMailer::Base.deliveries.last.to).to eq([other_admin.email])
     end
+
+    it 'sends to NOTIFICATION_EMAIL when configured' do
+      ticket = Ticket.create!(title: 'Help', description: 'Need help', customer: customer, assignee: other_admin)
+
+      ENV['NOTIFICATION_EMAIL'] = 'notify@example.com'
+      perform_enqueued_jobs do
+        described_class.ticket_assigned(ticket, actor: admin)
+      end
+
+      expect(ActionMailer::Base.deliveries.last.to).to eq(['notify@example.com'])
+    ensure
+      ENV.delete('NOTIFICATION_EMAIL')
+    end
   end
 
   describe '.comment_added' do
