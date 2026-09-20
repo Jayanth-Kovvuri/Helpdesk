@@ -1,0 +1,40 @@
+ar:
+  hello: "مرحباً بالعالم"
+  api:
+    errors:
+      unauthorized: غير مصرح
+      forbidden: ممنوع
+      query_required: معلمة الاستعلام q مطلوبة
+      invalid_attachment: نوع الملف أو حجمه غير صالح
+      invalid_current_password: كلمة المرور الحالية غير صحيحة
+      account_disabled: تم تعطيل هذا الحساب
+      cannot_disable_self: لا يمكنك تعطيل حسابك الخاص
+      notification_email_missing: NOTIFICATION_EMAIL غير محدد
+  ticket:
+    statuses:
+      open: مفتوحة
+      in_progress: قيد التنفيذ
+      pending: معلّقة
+      resolved: محلولة
+      closed: مغلقة
+    priorities:
+      low: منخفضة
+      medium: متوسطة
+      high: مرتفعة
+      urgent: عاجلة
+  user:
+    roles:
+      customer: عميل
+      admin: مسؤول
+  mailers:
+    ticket:
+      ticket_created:
+        subject: "[مكتب المساعدة] تذكرة جديدة #%{id}: %{title}"
+      ticket_assigned:
+        subject: "[مكتب المساعدة] تم تعيين التذكرة #%{id}: %{title}"
+      comment_added:
+        subject: "[مكتب المساعدة] تعليق جديد على التذكرة #%{id}: %{title}"
+      sla_reminder:
+        subject: "[مكتب المساعدة] تذكير باتفاقية مستوى الخدمة للتذكرة #%{id}: %{title}"
+      sla_breach:
+        subject: "[مكتب المساعدة] تم تجاوز اتفاقية مستوى الخدمة للتذكرة #%{id}: %{title}"
