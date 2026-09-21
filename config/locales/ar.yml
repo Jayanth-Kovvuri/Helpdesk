@@ -10,6 +10,7 @@ ar:
       account_disabled: تم تعطيل هذا الحساب
       cannot_disable_self: لا يمكنك تعطيل حسابك الخاص
       notification_email_missing: NOTIFICATION_EMAIL غير محدد
+      sla_not_applicable: اتفاقية مستوى الخدمة لا تنطبق على التذاكر المحلولة أو المغلقة
   ticket:
     statuses:
       open: مفتوحة
@@ -32,6 +33,8 @@ ar:
         subject: "[مكتب المساعدة] تذكرة جديدة #%{id}: %{title}"
       ticket_assigned:
         subject: "[مكتب المساعدة] تم تعيين التذكرة #%{id}: %{title}"
+      status_changed:
+        subject: "[مكتب المساعدة] التذكرة #%{id} أصبحت %{status}: %{title}"
       comment_added:
         subject: "[مكتب المساعدة] تعليق جديد على التذكرة #%{id}: %{title}"
       sla_reminder:

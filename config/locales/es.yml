@@ -25,12 +25,15 @@ es:
       account_disabled: Esta cuenta ha sido deshabilitada
       cannot_disable_self: No puede deshabilitar su propia cuenta
       notification_email_missing: NOTIFICATION_EMAIL no está configurado
+      sla_not_applicable: El SLA no aplica a tickets resueltos o cerrados
   mailers:
     ticket:
       ticket_created:
         subject: "[Helpdesk] Nuevo ticket #%{id}: %{title}"
       ticket_assigned:
         subject: "[Helpdesk] Asignado al ticket #%{id}: %{title}"
+      status_changed:
+        subject: "[Helpdesk] Ticket #%{id} ahora %{status}: %{title}"
       comment_added:
         subject: "[Helpdesk] Nuevo comentario en ticket #%{id}: %{title}"
       sla_reminder:

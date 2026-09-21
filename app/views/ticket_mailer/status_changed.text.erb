@@ -1,0 +1,5 @@
+Hello <%= @recipient.email %>,
+
+Ticket #<%= @ticket.id %> status changed from <%= @previous_status_label %> to <%= status_label(@ticket) %> (updated by <%= @actor.email %>).
+
+<%= render 'ticket_details' %>

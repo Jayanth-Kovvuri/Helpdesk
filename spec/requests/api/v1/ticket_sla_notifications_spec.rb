@@ -33,5 +33,18 @@ RSpec.describe 'Api::V1::TicketSlaNotifications', type: :request do
 
       expect(response).to have_http_status(:forbidden)
     end
+
+    it 'rejects resolved or closed tickets' do
+      ENV['NOTIFICATION_EMAIL'] = 'notify@example.com'
+      ticket.update!(status: :closed)
+      login_as(admin)
+
+      post "/api/v1/tickets/#{ticket.id}/sla_notify"
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)['error']).to include('SLA')
+    ensure
+      ENV.delete('NOTIFICATION_EMAIL')
+    end
   end
 end

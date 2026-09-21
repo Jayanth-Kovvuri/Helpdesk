@@ -41,6 +41,7 @@ en:
       account_disabled: This account has been disabled
       cannot_disable_self: You cannot disable your own account
       notification_email_missing: NOTIFICATION_EMAIL is not set
+      sla_not_applicable: SLA does not apply to resolved or closed tickets
   ticket:
     statuses:
       open: Open
@@ -63,6 +64,8 @@ en:
         subject: "[Helpdesk] New ticket #%{id}: %{title}"
       ticket_assigned:
         subject: "[Helpdesk] Assigned to ticket #%{id}: %{title}"
+      status_changed:
+        subject: "[Helpdesk] Ticket #%{id} now %{status}: %{title}"
       comment_added:
         subject: "[Helpdesk] New comment on ticket #%{id}: %{title}"
       sla_reminder:

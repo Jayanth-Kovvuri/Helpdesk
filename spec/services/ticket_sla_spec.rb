@@ -51,6 +51,14 @@ RSpec.describe TicketSla do
       expect(described_class.state(ticket)).to eq(:breached)
     end
 
+    it 'is nil for resolved or closed tickets' do
+      ticket = Ticket.create!(
+        title: 'Done', customer: customer, priority: :urgent, status: :closed, created_at: 5.days.ago
+      )
+
+      expect(described_class.state(ticket)).to be_nil
+    end
+
     context 'for urgent priority' do
       it 'is :ok for 0.5 days' do
         ticket = Ticket.create!(title: 'VPN', customer: customer, priority: :urgent, created_at: 0.5.days.ago)

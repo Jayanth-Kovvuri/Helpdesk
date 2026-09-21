@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class TicketSla
+  ACTIVE_STATUSES = %i[open in_progress pending].freeze
+
   # SLA thresholds in days for each priority
   SLA_THRESHOLDS_BY_PRIORITY = {
     urgent: { sla_days: 2, at_risk_days: 1 },
@@ -10,6 +12,10 @@ class TicketSla
   }.freeze
 
   class << self
+    def tracked?(ticket)
+      ACTIVE_STATUSES.include?(ticket.status.to_sym)
+    end
+
     def sla_config(priority)
       SLA_THRESHOLDS_BY_PRIORITY.fetch(priority.to_sym, SLA_THRESHOLDS_BY_PRIORITY[:medium])
     end
@@ -31,6 +37,8 @@ class TicketSla
     end
 
     def state(ticket)
+      return nil unless tracked?(ticket)
+
       elapsed = days_elapsed(ticket)
       sla_threshold = sla_days(ticket.priority)
       at_risk_threshold = at_risk_days(ticket.priority)

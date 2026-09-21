@@ -27,7 +27,12 @@ module Api
             ticket_blueprint.render(tickets_for_query(query), root: :tickets)
           end
         else
-          TicketResponseCache.fetch_index(current_user) do
+          TicketResponseCache.fetch_index(
+            current_user,
+            filter: params[:filter],
+            status: params[:status],
+            priority: params[:priority]
+          ) do
             ticket_blueprint.render(ticket_scope, root: :tickets)
           end
         end
@@ -79,6 +84,7 @@ module Api
       end
 
       if @ticket.update(attrs)
+        notify_ticket_status_changed_if_needed
         notify_ticket_assigned_if_changed
         render json: ticket_blueprint.render(@ticket.reload, root: :ticket)
       else
@@ -100,14 +106,19 @@ module Api
     end
 
     def apply_ticket_list_filter(scope)
-      case params[:filter]
-      when 'raised'
-        scope.where(customer_id: current_user.id)
-      when 'assigned'
-        scope.where(assignee_id: current_user.id)
-      else
-        scope
-      end
+      scope =
+        case params[:filter]
+        when 'raised'
+          scope.where(customer_id: current_user.id)
+        when 'assigned'
+          scope.where(assignee_id: current_user.id)
+        else
+          scope
+        end
+
+      scope = scope.where(status: params[:status]) if params[:status].present?
+      scope = scope.where(priority: params[:priority]) if params[:priority].present?
+      scope
     end
 
     def tickets_for_query(query)
@@ -215,8 +226,19 @@ module Api
       TicketNotifications.ticket_created(ticket, actor: current_user)
       TicketSlaScheduler.schedule_reminder(ticket)
       return if ticket.assignee_id.blank?
+      return if ENV['NOTIFICATION_EMAIL'].present?
 
       TicketNotifications.ticket_assigned(ticket, actor: current_user)
+    end
+
+    def notify_ticket_status_changed_if_needed
+      return unless @ticket.previous_changes.key?('status')
+
+      TicketNotifications.status_changed(
+        @ticket,
+        actor: current_user,
+        previous_status: @ticket.previous_changes['status'].first
+      )
     end
 
     def notify_ticket_assigned_if_changed

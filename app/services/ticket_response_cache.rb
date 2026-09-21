@@ -6,8 +6,12 @@ class TicketResponseCache
   SEARCH_TTL = 2.minutes
 
   class << self
-    def fetch_index(user, &block)
-      Rails.cache.fetch(index_key(user), expires_in: INDEX_TTL, &block)
+    def fetch_index(user, filter: nil, status: nil, priority: nil, &block)
+      Rails.cache.fetch(
+        index_key(user, filter: filter, status: status, priority: priority),
+        expires_in: INDEX_TTL,
+        &block
+      )
     end
 
     def fetch_show(ticket, &block)
@@ -24,9 +28,17 @@ class TicketResponseCache
       )
     end
 
-    def index_key(user)
+    def index_key(user, filter: nil, status: nil, priority: nil)
       scope = Ticket.visible_to(user)
-      ['tickets/v1/index', user.id, user.role, scope_version(scope)]
+      [
+        'tickets/v2/index',
+        user.id,
+        user.role,
+        scope_version(scope),
+        filter.presence,
+        status.presence,
+        priority.presence
+      ]
     end
 
     def show_key(ticket)

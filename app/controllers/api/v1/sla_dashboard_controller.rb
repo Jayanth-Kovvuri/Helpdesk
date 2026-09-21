@@ -6,7 +6,7 @@ module Api
       before_action :require_admin!
 
       def show
-        render json: TicketSlaDashboard.summary
+        render json: TicketSlaDashboard.summary(from: params[:from], to: params[:to])
       end
     end
   end

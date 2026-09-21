@@ -23,6 +23,7 @@ class Ticket < ApplicationRecord
   validate :assignee_must_be_admin, if: -> { assignee_id.present? }
 
   after_commit :sync_search_index, on: %i[create update]
+  after_commit :bust_sla_dashboard_cache_if_needed
 
   scope :visible_to, lambda { |user|
     if user.admin?
@@ -74,5 +75,13 @@ class Ticket < ApplicationRecord
     return if assignee&.admin?
 
     errors.add(:assignee, 'must be an admin user')
+  end
+
+  def bust_sla_dashboard_cache_if_needed
+    sla_relevant = %w[id status priority created_at]
+    return unless destroyed? || (previous_changes.keys & sla_relevant).any?
+
+    TicketSlaDashboard.bust_cache!
+    TicketSlaAnalytics.bust_cache!
   end
 end

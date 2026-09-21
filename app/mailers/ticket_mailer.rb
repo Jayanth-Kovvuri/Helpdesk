@@ -8,9 +8,28 @@ class TicketMailer < ApplicationMailer
     assign_mail_vars(ticket, recipient, actor)
 
     mail(
-      to: recipient.email,
+      to: MailRecipient.delivery_address(:ticket_created, recipient.email),
       subject: I18n.t('mailers.ticket.ticket_created.subject', id: ticket.id, title: ticket.title)
-    )
+    ) do |format|
+      format.text
+    end
+  end
+
+  def status_changed(ticket, recipient, actor, previous_status)
+    assign_mail_vars(ticket, recipient, actor)
+    @previous_status_label = I18n.t("ticket.statuses.#{previous_status}", default: previous_status.to_s.humanize)
+
+    mail(
+      to: MailRecipient.delivery_address(:status_changed, recipient.email),
+      subject: I18n.t(
+        'mailers.ticket.status_changed.subject',
+        id: ticket.id,
+        title: ticket.title,
+        status: status_label(ticket)
+      )
+    ) do |format|
+      format.text
+    end
   end
 
   def ticket_assigned(ticket, recipient, actor)

@@ -9,6 +9,18 @@ RSpec.describe TicketMailer, type: :mailer do
     Ticket.create!(title: 'VPN issue', description: 'Cannot connect', customer: customer, assignee: admin)
   end
 
+  around do |example|
+    @previous_notification_email = ENV['NOTIFICATION_EMAIL']
+    ENV.delete('NOTIFICATION_EMAIL')
+    example.run
+  ensure
+    if @previous_notification_email.nil?
+      ENV.delete('NOTIFICATION_EMAIL')
+    else
+      ENV['NOTIFICATION_EMAIL'] = @previous_notification_email
+    end
+  end
+
   describe '#ticket_created' do
     let(:mail) { described_class.ticket_created(ticket, admin, customer) }
 
@@ -16,6 +28,11 @@ RSpec.describe TicketMailer, type: :mailer do
       expect(mail.to).to eq([admin.email])
       expect(mail.subject).to include("New ticket ##{ticket.id}")
       expect(mail.body.encoded).to include('VPN issue')
+    end
+
+    it 'routes to NOTIFICATION_EMAIL when configured' do
+      ENV['NOTIFICATION_EMAIL'] = 'notify@example.com'
+      expect(mail.to).to eq(['notify@example.com'])
     end
   end
 

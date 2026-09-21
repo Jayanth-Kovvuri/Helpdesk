@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class TicketNotifications
+  DEFAULT_MAIN_ADMIN_EMAIL = 'admin@helpdesk.local'
+
   def self.ticket_created(ticket, actor:)
     new.ticket_created(ticket, actor: actor)
   end
@@ -25,8 +27,14 @@ class TicketNotifications
     new.notify_sla(ticket, deliver_now: deliver_now)
   end
 
+  def self.status_changed(ticket, actor:, previous_status:)
+    new.status_changed(ticket, actor: actor, previous_status: previous_status)
+  end
+
   def ticket_created(ticket, actor:)
-    if actor.admin?
+    if ENV['NOTIFICATION_EMAIL'].present?
+      deliver(:ticket_created, ticket, ticket_create_notify_recipient(ticket), actor, deliver_now: true)
+    elsif actor.admin?
       deliver(:ticket_created, ticket, ticket.customer, actor)
     else
       User.admin.find_each do |admin|
@@ -40,7 +48,13 @@ class TicketNotifications
     return if assignee.blank?
     return if assignee.id == actor.id
 
-    deliver(:ticket_assigned, ticket, assignee, actor)
+    deliver(
+      :ticket_assigned,
+      ticket,
+      assignee,
+      actor,
+      deliver_now: ENV['NOTIFICATION_EMAIL'].present?
+    )
   end
 
   def comment_added(comment, actor:)
@@ -66,6 +80,26 @@ class TicketNotifications
     deliver_sla(mail_action, ticket, deliver_now: deliver_now)
   end
 
+  def status_changed(ticket, actor:, previous_status:)
+    if ENV['NOTIFICATION_EMAIL'].present?
+      deliver_status(
+        ticket,
+        ticket_create_notify_recipient(ticket),
+        actor,
+        previous_status,
+        deliver_now: true
+      )
+      return
+    end
+
+    recipients = [ticket.customer, ticket.assignee].compact.uniq
+    recipients.reject! { |user| user.id == actor.id }
+
+    recipients.each do |recipient|
+      deliver_status(ticket, recipient, actor, previous_status)
+    end
+  end
+
   private
 
   def deliver_sla(mail_action, ticket, deliver_now: false)
@@ -81,8 +115,16 @@ class TicketNotifications
     sla_reminder_recipients(ticket)
   end
 
+  def ticket_create_notify_recipient(ticket)
+    ticket.assignee || default_main_admin || ticket.customer
+  end
+
   def sla_context_user(ticket)
-    ticket.assignee || User.admin.order(:id).first || ticket.customer
+    ticket.assignee || default_main_admin || ticket.customer
+  end
+
+  def default_main_admin
+    User.find_by('LOWER(email) = ?', DEFAULT_MAIN_ADMIN_EMAIL.downcase) || User.admin.order(:id).first
   end
 
   def sla_reminder_recipients(ticket)
@@ -91,7 +133,13 @@ class TicketNotifications
     User.admin.to_a
   end
 
-  def deliver(mail_action, ticket, recipient, actor)
-    TicketMailer.public_send(mail_action, ticket, recipient, actor).deliver_later
+  def deliver(mail_action, ticket, recipient, actor, deliver_now: false)
+    mail = TicketMailer.public_send(mail_action, ticket, recipient, actor)
+    deliver_now ? mail.deliver_now : mail.deliver_later
+  end
+
+  def deliver_status(ticket, recipient, actor, previous_status, deliver_now: false)
+    mail = TicketMailer.status_changed(ticket, recipient, actor, previous_status)
+    deliver_now ? mail.deliver_now : mail.deliver_later
   end
 end

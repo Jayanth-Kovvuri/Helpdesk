@@ -8,6 +8,10 @@ module Api
 
       # POST /api/v1/tickets/:ticket_id/sla_notify
       def create
+        unless TicketSla.tracked?(@ticket)
+          return render json: { error: I18n.t('api.errors.sla_not_applicable') }, status: :unprocessable_entity
+        end
+
         recipient = ENV['NOTIFICATION_EMAIL'].presence
         if recipient.blank?
           return render json: { error: I18n.t('api.errors.notification_email_missing') }, status: :unprocessable_entity

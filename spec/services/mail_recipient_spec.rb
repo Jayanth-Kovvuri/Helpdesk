@@ -17,6 +17,7 @@ RSpec.describe MailRecipient do
 
     it 'returns the override for routed notification types' do
       ENV['NOTIFICATION_EMAIL'] = 'notify@example.com'
+      expect(described_class.delivery_address(:ticket_created, 'user@helpdesk.local')).to eq('notify@example.com')
       expect(described_class.delivery_address(:ticket_assigned, 'user@helpdesk.local')).to eq('notify@example.com')
       expect(described_class.delivery_address(:sla_breach, 'admin@helpdesk.local')).to eq('notify@example.com')
     end
@@ -28,7 +29,7 @@ RSpec.describe MailRecipient do
 
     it 'returns the default for non-routed types even when override is set' do
       ENV['NOTIFICATION_EMAIL'] = 'notify@example.com'
-      expect(described_class.delivery_address(:ticket_created, 'user@helpdesk.local')).to eq('user@helpdesk.local')
+      expect(described_class.delivery_address(:comment_added, 'user@helpdesk.local')).to eq('user@helpdesk.local')
     end
   end
 end

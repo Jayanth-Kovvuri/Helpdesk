@@ -3,6 +3,18 @@
 require 'rails_helper'
 
 RSpec.describe 'Api::V1::Tickets', type: :request do
+  around do |example|
+    @previous_notification_email = ENV['NOTIFICATION_EMAIL']
+    ENV.delete('NOTIFICATION_EMAIL')
+    example.run
+  ensure
+    if @previous_notification_email.nil?
+      ENV.delete('NOTIFICATION_EMAIL')
+    else
+      ENV['NOTIFICATION_EMAIL'] = @previous_notification_email
+    end
+  end
+
   let!(:customer) do
     User.create!(email: 'customer@helpdesk.local', name: 'customer@helpdesk.local', password: 'password123', role: :customer)
   end
@@ -50,6 +62,20 @@ RSpec.describe 'Api::V1::Tickets', type: :request do
       expect(response).to have_http_status(:ok)
       ids = json['tickets'].map { |t| t['id'] }
       expect(ids).to eq([customer_ticket.id])
+    end
+
+    it 'filters by status and priority without search query' do
+      low_open = Ticket.create!(
+        title: 'Low open', description: 'x', customer: customer, priority: :low, status: :open
+      )
+      customer_ticket.update!(status: :in_progress, priority: :high)
+
+      login_as(customer)
+      get '/api/v1/tickets', params: { filter: 'raised', status: 'open', priority: 'low' }
+
+      expect(response).to have_http_status(:ok)
+      ids = json['tickets'].map { |t| t['id'] }
+      expect(ids).to eq([low_open.id])
     end
   end
 
@@ -137,6 +163,20 @@ RSpec.describe 'Api::V1::Tickets', type: :request do
       expect(response).to have_http_status(:ok)
       expect(json['ticket']['status']['code']).to eq('in_progress')
       expect(json['ticket']['assignee']['id']).to eq(admin.id)
+    end
+
+    it 'emails NOTIFICATION_EMAIL when status changes' do
+      ENV['NOTIFICATION_EMAIL'] = 'notify@example.com'
+      login_as(admin)
+
+      expect do
+        patch "/api/v1/tickets/#{customer_ticket.id}", params: {
+          ticket: { status: 'resolved' }
+        }
+      end.to change { ActionMailer::Base.deliveries.size }.by(1)
+
+      expect(response).to have_http_status(:ok)
+      expect(ActionMailer::Base.deliveries.last.to).to eq(['notify@example.com'])
     end
 
     it 'lets customer withdraw their ticket by setting status to closed' do
